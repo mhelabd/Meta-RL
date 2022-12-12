@@ -9,7 +9,7 @@ N_TEST_TRAJECTORIES = 100
 
 print("Loading model...")
 model = PPO.load(SAVES_TO)
-env = MetaRLEnv(xml_path, do_render=False)
+env = MetaRLEnv(xml_path, do_render=True)
 
 num_trajectories = 0
 num_success = 0

@@ -54,6 +54,7 @@ class MultiTaskRLAlgo(BaseTrainer):
         gae_lambda: int = 1.0,
         inner_lr: int = 0.1,
         num_grad_updates: int = 1,
+        entropy_method: str = "no_entropy",
         #  Misc
         snapshot_dir: str = "saves/PPO/",
         seed: int = 1,
@@ -116,6 +117,7 @@ class MultiTaskRLAlgo(BaseTrainer):
             # inner_lr=inner_lr,
             # num_grad_updates=num_grad_updates
             # meta_evaluator=self.meta_evaluator,
+            entropy_method=entropy_method
         )
 
         super().__init__(
@@ -139,6 +141,7 @@ def my_experiment(ctxt):
     algo = MultiTaskRLAlgo(ctxt=ctxt,
                             num_samples=trainConfig.num_samples,
                             meta_batch_size=trainConfig.meta_batch_size,
+                            entropy_method=trainConfig.entropy_method,
                             do_render=trainConfig.do_render)
     try:
         algo.train(trainConfig.epochs)

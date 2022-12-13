@@ -69,8 +69,9 @@ class MetaRLEnv(gym.Env):
 
         self.action_space = self._set_action_space()
         # self.entity_names = self._get_object_names()
-        #TEMPORARY OVERRIDE
-        self.entity_names = np.array(['particle_hinge0:particle', 'target', 'cube0'])
+        # TEMPORARY OVERRIDE
+        self.entity_names = np.array(
+            ['particle_hinge0:particle', 'target', 'cube0'])
 
         self.object_names = self._get_object_names(
             include_agent=False, include_target=False)
@@ -84,7 +85,7 @@ class MetaRLEnv(gym.Env):
 
         if self.do_render:
             self.viewer = mujoco_viewer.MujocoViewer(self.model, self.data)
-        
+
         print("Init.", end="")
 
     def _initialize_locations(self, actor_loc: List[float], objects_loc: List[List[float]], target_loc: List[float]):
@@ -106,8 +107,8 @@ class MetaRLEnv(gym.Env):
         num_objects = len(self.entity_names)
         if self.use_akro:
             obs = akro.Box(
-                low=envConfig.WORLD_MIN_LOC - 0.01,
-                high=envConfig.WORLD_MAX_LOC + 0.01,
+                low=envConfig.WORLD_MIN_LOC,
+                high=envConfig.WORLD_MAX_LOC,
                 shape=(num_objects * (envConfig.POS_DIM + envConfig.XQUAT_DIM), ),
                 dtype=np.float64
             )
@@ -164,26 +165,26 @@ class MetaRLEnv(gym.Env):
 
         target_xpos = self.target_loc
         # get all object observations
-        objects_xpos = self.get_observation(self.object_names, flatten=False)
-        # discard rotation data, only keep xpos data
-        objects_xpos = objects_xpos[:, :-envConfig.XQUAT_DIM]
+        # objects_xpos = self.get_observation(self.object_names, flatten=False)
+        # # discard rotation data, only keep xpos data
+        # objects_xpos = objects_xpos[:, :-envConfig.XQUAT_DIM]
 
-        dists_cubes_to_targets = dist(objects_xpos, target_xpos)
-        # Truth array for which cubes are newly successes
-        new_successes = (dists_cubes_to_targets <
-                         envConfig.MIN_DIST_TO_TARGET) & ~self.objects_completed
-        if np.sum(new_successes) > 0:
-            self.objects_completed = self.objects_completed | new_successes
-            return 100 * np.sum(new_successes)
-        return -0.001 * np.sum(dists_cubes_to_targets[~self.objects_completed])
+        # dists_cubes_to_targets = dist(objects_xpos, target_xpos)
+        # # Truth array for which cubes are newly successes
+        # new_successes = (dists_cubes_to_targets <
+        #                  envConfig.MIN_DIST_TO_TARGET) & ~self.objects_completed
+        # if np.sum(new_successes) > 0:
+        #     self.objects_completed = self.objects_completed | new_successes
+        #     return 100 * np.sum(new_successes)
+        # return -0.001 * np.sum(dists_cubes_to_targets[~self.objects_completed])
 
-        # agent_xpos = self.data.body(envConfig.AGENT_NAME).xpos
-        # dist_agent_to_target = dist(agent_xpos, target_xpos)
-        # if dist_agent_to_target < envConfig.MIN_DIST_TO_TARGET:
-        # 	print("Success!", end="")
-        # 	self.objects_completed = [True]  #terminal
-        # 	return 100
-        # return -0.001 * dist_agent_to_target
+        agent_xpos = self.data.body(envConfig.AGENT_NAME).xpos
+        dist_agent_to_target = dist(agent_xpos, target_xpos)
+        if dist_agent_to_target < envConfig.MIN_DIST_TO_TARGET:
+            print("Success!", end="")
+            self.objects_completed = [True]  # terminal
+            return 100
+        return -0.001 * dist_agent_to_target
 
     def get_done(self, observation: np.ndarray) -> bool:
         """Gets whether the terminal condition has been reached.
@@ -217,7 +218,10 @@ class MetaRLEnv(gym.Env):
         self.num_steps = 0
         self.objects_completed = np.array([False]*len(self.object_names))
         mujoco.mj_resetData(self.model, self.data)
-        self._initialize_locations(self.actor_loc, self.objects_loc, self.target_loc)
+        self._initialize_locations(
+            self.actor_loc, self.objects_loc, self.target_loc)
+        self.entity_names = np.array(
+            ['particle_hinge0:particle', 'target', 'cube0'])
         observation = self.get_observation(self.entity_names)
         return observation
 

@@ -55,7 +55,7 @@ class BaseTrainer:
                     envs.append(
                         lambda: MetaRLEnv(
                             self.env_xml_path,
-                            do_render=self.do_render,
+                            do_render=False, #TEMPORARY
                             # envConfig.WORLD_MAX_LOC * np.random.rand(3),
                             actor_loc=actor_loc,
                             # envConfig.WORLD_MAX_LOC* np.random.rand(3),
@@ -101,7 +101,7 @@ class BaseTrainer:
         rewards = []
         num_success = 0
         num_attempts = 0
-        self.do_render = do_render
+        self.do_render = True
         self.envs = self.get_envs_list(
             num_objs=self.num_objs, num_samples=num_evals)
         for env in self.envs:

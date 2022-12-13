@@ -22,9 +22,15 @@ class TrainConfig:
     epochs = 5_000_000
     do_render = False
 
+    #MAML Params
+    inner_lr = 1e-5
+    outer_lr = 1e-4
+    lr_clip_range = 1e-3
+    entropy_method = "regularized"
+
     # Evaluation
     num_evals = 10
-    num_samples_per_eval = 5
+    num_samples_per_eval = 100
 
     # Finetune params
     pretrain_epochs = 500_000

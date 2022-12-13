@@ -53,17 +53,20 @@ class MetaRLAlgo(BaseTrainer):
                 32, 32),
             #  Learning Hyperparameters
             meta_batch_size: int = 1,
-            discount: int = 0.99,
-            gae_lambda: int = 1.0,
-            inner_lr: int = 0.1,
+            discount: float = 0.99,
+            gae_lambda: float = 1.0,
+            inner_lr: float = 0.1,
+            outer_lr: float = 1e-3,
             num_grad_updates: int = 1,
+            lr_clip_range: float = 5e-1,
+            entropy_method='no_entropy',
             #  Meta Learning
             n_test_tasks: int = 1,
             n_test_episodes: int = 1,
             #  Misc
             snapshot_dir: str = "saves/MAMLPPO/",
             seed: int = 2,
-            use_gpu = False,
+            use_gpu=False,
     ):
         set_seed(seed)
         # Environment Setup
@@ -75,9 +78,9 @@ class MetaRLAlgo(BaseTrainer):
         self.env = MetaRLEnv(self.env_xml_path, do_render=self.do_render)
         self.env = GymEnv(self.env, max_episode_length=envConfig.MAX_NUM_STEPS)
         assert isinstance(self.env, Environment)
-        
+
         # Learning Models
-        
+
         self.policy = GaussianMLPPolicy(
             env_spec=self.env.spec,
             hidden_sizes=policy_hidden_states,
@@ -126,8 +129,11 @@ class MetaRLAlgo(BaseTrainer):
             discount=discount,
             gae_lambda=gae_lambda,
             inner_lr=inner_lr,
+            outer_lr=outer_lr,
             num_grad_updates=num_grad_updates,
             meta_evaluator=self.meta_evaluator,
+            lr_clip_range=lr_clip_range,
+            entropy_method=entropy_method
         )
 
         super().__init__(
@@ -150,22 +156,26 @@ class MetaRLAlgo(BaseTrainer):
 )
 def my_experiment(ctxt):
     algo = MetaRLAlgo(ctxt=ctxt,
-                            num_samples=trainConfig.num_samples,
-                            meta_batch_size=trainConfig.meta_batch_size,
-                            n_test_tasks=trainConfig.n_test_tasks,
-                            n_test_episodes=trainConfig.n_test_episodes,
-                            do_render=trainConfig.do_render,
-                            use_gpu=True)
+                      num_samples=trainConfig.num_samples,
+                      meta_batch_size=trainConfig.meta_batch_size,
+                      n_test_tasks=trainConfig.n_test_tasks,
+                      n_test_episodes=trainConfig.n_test_episodes,
+                      do_render=trainConfig.do_render,
+                      inner_lr=trainConfig.inner_lr,
+                      outer_lr=trainConfig.outer_lr,
+                      lr_clip_range=trainConfig.lr_clip_range,
+                      entropy_method=trainConfig.entropy_method
+                      )
     try:
         print("about to train")
         algo.train(trainConfig.epochs)
     except KeyboardInterrupt:
-        print("Interrupted, evaluatings now")     
+        print("Interrupted, evaluatings now")
     # Evaluation
     results = algo.evaluate(
         num_evals=trainConfig.num_evals,
         num_samples_per_eval=trainConfig.num_samples_per_eval,
-        do_render=True,
+        do_render=trainConfig.do_render,
     )
     print(results)
     metrics_path = os.path.join(ctxt.snapshot_dir, 'metrics.json')

@@ -188,7 +188,7 @@ def my_experiment(ctxt):
     results = algo.evaluate(
         num_evals=trainConfig.num_evals,
         num_samples_per_eval=trainConfig.num_samples_per_eval,
-        do_render=True,
+        do_render=trainConfig.do_render,
     )
     print(results)
     metrics_path = os.path.join(ctxt.snapshot_dir, 'metrics.json')

@@ -62,18 +62,29 @@ class FineTuneRLAlgo:
     ) -> List:
         envs = []
         num_samples = int(num_samples / (1 + num_objs[1] - num_objs[0]))
+        actor_loc = [0.55, 0.55, 0.15]
+        objects_loc = [[0.75, 0.75, 0.125]]
         for _ in range(num_samples):
             for number_of_objects in range(num_objs[0], num_objs[1] + 1):
                 envs.append(
-                    lambda: MetaRLEnv(
-                        self.env_xml_path,
-                        do_render=self.do_render,
-                        actor_loc=envConfig.WORLD_MAX_LOC * np.random.rand(3),
-                        objects_loc=envConfig.WORLD_MAX_LOC
-                        * np.random.rand(number_of_objects, 3),
-                        number_of_objects=number_of_objects,
+                        lambda: MetaRLEnv(
+                            self.env_xml_path,
+                            do_render=self.do_render,
+                            # envConfig.WORLD_MAX_LOC * np.random.rand(3),
+                            actor_loc=actor_loc,
+                            # envConfig.WORLD_MAX_LOC* np.random.rand(3),
+                            objects_loc=objects_loc,
+                            # 0-5 0-5
+                            # ( [1,4], [0,5] 0.5)
+                            # ( [1,4], [0,4] 0.05)
+                            target_loc= [
+                                1 + (envConfig.WORLD_MAX_LOC-2) * np.random.rand(), 
+                                1 + (envConfig.WORLD_MAX_LOC-2) * np.random.rand(),
+                                0.05,
+                            ],
+                            number_of_objects=number_of_objects,
+                        )
                     )
-                )
         return envs
 
     def train(self, epochs):

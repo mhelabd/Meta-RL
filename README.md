@@ -1,4 +1,4 @@
-# Assessing Meta-Reinforcement Learning Algorithms in Complex Environments
+# Assessing Meta-Reinforcement Learning Algorithms in Complex Task Distributions
 
 Final Project for CS 330: Deep Multi-Task and Meta Learning. Using randomly sampled Mujoco world environments to test leading Meta-RL algorithms on task distributions that require both navigation and object manipulation. Link to final paper: [link]
 
